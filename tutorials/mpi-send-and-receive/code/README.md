@@ -4,7 +4,7 @@ OMPI_CC=clang mpicc -O3 -emit-llvm send_recv_nonblk.c -c -o send_recv_nonblk.bc
 ```
 Apply LLVM pass to byte code and generate transformed byte code
 ```
-opt -load /ssd1/llvm-project/build/lib/LLVMHello.so -hello < send_recv_nonblk.bc > send_recv_nonblk_transformed.bc
+opt -load /ssd1/llvm-project/build/lib/LLVMHello.so -enable-new-pm=0 -hello < send_recv_nonblk.bc > send_recv_nonblk_transformed.bc
 ```
 Convert byte code to object file
 ```
