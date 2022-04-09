@@ -9,4 +9,6 @@ llc -filetype=obj send_recv_nonblk_transformed.bc
 OMPI_CC=clang mpicc send_recv_nonblk_transformed.o -o send_recv_nonblk_transformed
 #Run the transformed code
 mpirun -np 2 ./send_recv_nonblk_transformed
+#Turn bc into ll
+llvm-dis send_recv_nonblk_transformed.bc
 ```
