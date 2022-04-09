@@ -11,12 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void test_fucn1 (){
+void test_func1 (){
     int i =3;
+    printf("test func 1");
 
 }
-void test_fucn2 (){
+void test_func2 (){
     int j =34;
+    printf("test func 2");
 }
 
 int main(int argc, char** argv) {
@@ -33,6 +35,10 @@ int main(int argc, char** argv) {
     fprintf(stderr, "World size must be greater than 1 for %s\n", argv[0]);
     MPI_Abort(MPI_COMM_WORLD, 1);
   }
+
+  test_func1();
+  int test_arr [10] = {123,456,789};
+  test_func2();
 
   int number [100000] = {11, 22, 33, 44};
   number [99999] = 999;
@@ -53,6 +59,9 @@ int main(int argc, char** argv) {
       /* request      = */ &send_req);
     printf("sender waiting...");
     MPI_Wait(&send_req, &stat);
+    test_arr[1] = 10*3 + test_arr[2];
+    test_arr[2] = 11*3 + test_arr[3];
+    printf("end of sender basicblock");
   } else if (world_rank == 1) {
     MPI_Irecv(
       /* data         = */ &dest, 
