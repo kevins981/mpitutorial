@@ -2,7 +2,7 @@
 # Generate byte code from C source 
 OMPI_CC=clang mpicc -O3 -emit-llvm send_recv_nonblk.c -c -o send_recv_nonblk.bc
 # Apply LLVM pass to byte code and generate transformed byte code
-opt -load /ssd1/llvm-project-kevin/build/lib/LLVMHello.so -enable-new-pm=0 -hello < send_recv_nonblk.bc > send_recv_nonblk_transformed.bc
+opt -load /ssd1/llvm-project-kevin/build/lib/LLVMMPI_overlap.so -enable-new-pm=0 -mpi_overlap < send_recv_nonblk.bc > send_recv_nonblk_transformed.bc
 #Convert byte code to object file
 llc -filetype=obj send_recv_nonblk_transformed.bc
 #Compile object code into executable
