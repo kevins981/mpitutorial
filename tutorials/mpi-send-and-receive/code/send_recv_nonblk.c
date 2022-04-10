@@ -64,13 +64,17 @@ int main(int argc, char** argv) {
     //for (int i = 0; i < 5; i++) {
     //    number[i] = number[0] + number[i+1];
     //}
-    printf("sender after wait\n");
+    // should hoist the below loop
     for (int i = 0; i < 10; i++) {
         test_arr[i] = test_arr[i] + test_arr[i+1] + rand() % 10 ;
     }
+    // TODO: test if we can hoist this. We should be able to
+    int test = number[0] + rand() % 10;
+    // should not hoist the below line
     number[0] = 10*3;
+    // print compute results
     for (int i = 0; i < 10; i++) {
-        printf("print test arr %d \n", test_arr[i]);
+        printf("Source: print test arr %d \n", test_arr[i]);
     }
   } else if (world_rank == 1) {
     MPI_Irecv(
@@ -83,7 +87,19 @@ int main(int argc, char** argv) {
       /* request      = */ &recv_req);
     printf("receiver waiting...");
     MPI_Wait(&recv_req, &stat);
+    // should be able to hoist the below loop
+    for (int i = 0; i < 10; i++) {
+        test_arr[i] = test_arr[i] + test_arr[i+1] + rand() % 9 ;
+    }
+    // should not be able to hoist the line below
+    int test = dest[0] + rand() % 10;
+    printf("Test is %d\n", test);
+    // should not be able to hoist the line below
+    dest[1] = 2 + rand() % 10;
     printf("Process 1 received number %d from process 0\n", dest[0]);
+    for (int i = 0; i < 10; i++) {
+        printf("Dest: print test arr %d \n", test_arr[i]);
+    }
   }
   MPI_Finalize();
 }
