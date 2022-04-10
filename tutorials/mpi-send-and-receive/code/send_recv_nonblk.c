@@ -16,9 +16,10 @@ void test_func1 (){
     printf("test func 1");
 
 }
-void test_func2 (){
-    int j =34;
-    printf("test func 2");
+void test_func2 (int * arr){
+    for (int i = 0; i < 5; i++) {
+        arr[i] = arr[0] + arr[i+1];
+    }
 }
 
 int main(int argc, char** argv) {
@@ -37,12 +38,11 @@ int main(int argc, char** argv) {
   }
 
   test_func1();
-  int test_arr [10] = {123,456,789};
-  test_func2();
-
+  int test_arr [10] = {123,456,789,1,2,3,4,5,6};
+  srand (0);
   int number [100000] = {11, 22, 33, 44};
   number [99999] = 999;
-  int dest [100000];
+  int dest [100000] = {1,2,3,4,5,6,7,8,9,10};
   MPI_Request send_req;
   MPI_Request recv_req;
   MPI_Status stat;
@@ -50,21 +50,31 @@ int main(int argc, char** argv) {
   if (world_rank == 0) {
     // If we are rank 0, set the number to -1 and send it to process 1
     MPI_Isend(
-      /* data         = */ &number, 
+      /* data         = */ number, 
       /* count        = */ 100000, 
       /* datatype     = */ MPI_INT, 
       /* destination  = */ 1, 
       /* tag          = */ 0, 
       /* communicator = */ MPI_COMM_WORLD,
       /* request      = */ &send_req);
-    printf("sender waiting...");
+    printf("sender waiting...\n");
     MPI_Wait(&send_req, &stat);
-    test_arr[1] = 10*3 + test_arr[2];
-    test_arr[2] = 11*3 + test_arr[3];
-    printf("end of sender basicblock");
+    // need to handle the below case. Cannot move
+    // https://stackoverflow.com/questions/71066473/in-llvm-how-do-i-get-the-loop-and-its-instructions
+    //for (int i = 0; i < 5; i++) {
+    //    number[i] = number[0] + number[i+1];
+    //}
+    printf("sender after wait\n");
+    for (int i = 0; i < 10; i++) {
+        test_arr[i] = test_arr[i] + test_arr[i+1] + rand() % 10 ;
+    }
+    number[0] = 10*3;
+    for (int i = 0; i < 10; i++) {
+        printf("print test arr %d \n", test_arr[i]);
+    }
   } else if (world_rank == 1) {
     MPI_Irecv(
-      /* data         = */ &dest, 
+      /* data         = */ dest, 
       /* count        = */ 100000, 
       /* datatype     = */ MPI_INT, 
       /* source       = */ 0, 
@@ -74,9 +84,6 @@ int main(int argc, char** argv) {
     printf("receiver waiting...");
     MPI_Wait(&recv_req, &stat);
     printf("Process 1 received number %d from process 0\n", dest[0]);
-    printf("Process 1 received number %d from process 0\n", dest[1]); printf("Process 1 received number %d from process 0\n", dest[2]);
-    printf("Process 1 received number %d from process 0\n", dest[3]);
-    printf("Process 1 received number %d from process 0\n", dest[99999]);
   }
   MPI_Finalize();
 }
