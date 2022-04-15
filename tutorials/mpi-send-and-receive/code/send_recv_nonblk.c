@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   }
 
   test_func1();
-  int test_arr [10] = {123,456,789,1,2,3,4,5,6};
+  int test_arr [1000000] = {123,456,789,1,2,3,4,5,6};
   srand (0);
   int number [100000] = {11, 22, 33, 44};
   number [99999] = 999;
@@ -73,9 +73,9 @@ int main(int argc, char** argv) {
     // should not hoist the below line
     number[0] = 10*3;
     // print compute results
-    for (int i = 0; i < 10; i++) {
-        printf("Source: print test arr %d \n", test_arr[i]);
-    }
+    //for (int i = 0; i < 10; i++) {
+    //    printf("Source: print test arr %d \n", test_arr[i]);
+    //}
   } else if (world_rank == 1) {
     MPI_Irecv(
       /* data         = */ dest, 
@@ -86,20 +86,20 @@ int main(int argc, char** argv) {
       /* communicator = */ MPI_COMM_WORLD, 
       /* request      = */ &recv_req);
     printf("receiver waiting...");
-    MPI_Wait(&recv_req, &stat);
     // should be able to hoist the below loop
-    for (int i = 0; i < 10; i++) {
-        test_arr[i] = test_arr[i] + test_arr[i+1] + rand() % 9 ;
+    for (int i = 0; i < 900000; i++) {
+        test_arr[i] = test_arr[i] * test_arr[i+1] / (rand() % 9 + 1) ;
     }
+    MPI_Wait(&recv_req, &stat);
     // should not be able to hoist the line below
     int test = dest[0] + rand() % 10;
-    printf("Test is %d\n", test);
+    //printf("Test is %d\n", test);
     // should not be able to hoist the line below
     dest[1] = 2 + rand() % 10;
     printf("Process 1 received number %d from process 0\n", dest[0]);
-    for (int i = 0; i < 10; i++) {
-        printf("Dest: print test arr %d \n", test_arr[i]);
-    }
+    //for (int i = 0; i < 10; i++) {
+    //    printf("Dest: print test arr %d \n", test_arr[i]);
+    //}
   }
   MPI_Finalize();
 }
